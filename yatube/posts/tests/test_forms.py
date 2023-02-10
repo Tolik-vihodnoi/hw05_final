@@ -142,7 +142,6 @@ class TestPostForm(TestCase):
         )
         self.assertRedirects(
             response,
-            (reverse('users:login') +
-             f'?next=/posts/{self.post.pk}/comment/')
+            (reverse('users:login') + f'?next=/posts/{self.post.pk}/comment/')
         )
         self.assertEqual(0, Comment.objects.count())
