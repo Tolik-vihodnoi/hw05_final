@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommentForm, PostForm
 from .models import Follow, Group, Post, User
-from .utils import do_page_obj, extract_user_author
+from .utils import do_page_obj
 
 
 def index(request):
@@ -32,12 +32,12 @@ def profile(request, username):
     posts_owner = get_object_or_404(User, username=username)
     posts = posts_owner.posts.select_related('author', 'group')
     page_obj = do_page_obj(request, posts, settings.NUM_OF_POSTS)
-    following = False
-    if request.user.is_authenticated:
-        following = Follow.objects.filter(
-            user=request.user,
-            author=posts_owner
-        ).exists()
+    user = request.user
+    following = (
+            user.is_authenticated
+            and not user == posts_owner
+            and Follow.objects.filter(user=user, author=posts_owner).exists()
+    )
     context = {
         'page_obj': page_obj,
         'posts_owner': posts_owner,
@@ -52,7 +52,7 @@ def post_detail(request, post_id):
         pk=post_id
     )
     form = CommentForm()
-    comments = post.comments.select_related('author', 'post')
+    comments = post.comments.select_related('author')
     context = {
         'post': post,
         'form': form,
@@ -116,16 +116,24 @@ def follow_index(request):
 
 @login_required
 def profile_follow(request, username):
-    if request.user == User.objects.get(username=username):
-        return redirect('posts:profile', username)
-    data = extract_user_author(request, username)
-    if not Follow.objects.filter(**data).exists():
-        Follow.objects.create(**data)
+    user = request.user
+    if user != get_object_or_404(User, username=username):
+        author = get_object_or_404(User, username=username)
+        data = {
+            'user': user,
+            'author': author
+        }
+        Follow.objects.get_or_create(**data)
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    data = extract_user_author(request, username)
+    user = request.user
+    author = get_object_or_404(User, username=username)
+    data = {
+        'user': user,
+        'author': author
+    }
     Follow.objects.filter(**data).delete()
     return redirect('posts:profile', username)

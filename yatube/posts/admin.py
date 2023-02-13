@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Group, Post
+from .models import Group, Post, Comment
 
 
 class PostAdmin(admin.ModelAdmin):
@@ -20,5 +20,17 @@ class GroupAdmin(admin.ModelAdmin):
     list_display_links = ('slug',)
 
 
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('post', 'author', 'text', 'created')
+    search_fields = ('text', 'author', 'created')
+    list_filter = ('author', 'post', 'created')
+    empty_value_display = '-пусто-'
+    list_display_links = ('text',)
+    list_editable = ('author',)
+    list_select_related = ('author',)
+    ordering = ('post',)
+
+
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(Comment, CommentAdmin)

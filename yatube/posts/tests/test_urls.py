@@ -5,6 +5,7 @@ from django.test import Client, TestCase
 
 from ..models import Group, Post
 
+
 User = get_user_model()
 
 
@@ -44,8 +45,9 @@ class PostUrlTest(TestCase):
         }
         self.redirect_dict_unauth = {
             '/create/': '/auth/login/?next=/create/',
-            (f'/posts/{PostUrlTest.post.id}/'
-             f'edit/'): f'/auth/login/?next=/posts/{PostUrlTest.post.id}/edit/'
+            (f'/posts/{PostUrlTest.post.id}/edit'
+             '/'): f'/auth/login/?next=/posts/{PostUrlTest.post.id}/edit/',
+            '/follow/': f'/auth/login/?next=/follow/'
         }
         self.unexisting_url = {'/unexisting_page/': 'core/404.html'}
 

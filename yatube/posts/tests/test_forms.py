@@ -7,7 +7,8 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from posts.models import Group, Post, Comment
+from posts.models import Comment, Group, Post
+
 
 TEMP_MEDIA_ROOT = tempfile.mktemp(dir=settings.BASE_DIR)
 User = get_user_model()
@@ -92,12 +93,9 @@ class TestPostForm(TestCase):
             'posts:profile', args=(TestPostForm.user.username,)))
         self.assertEqual(1, Post.objects.count())
         upload_dir = self.post._meta.get_field('image').upload_to
-        self.assertTrue(
-            Post.objects.filter(
-                text=form_data['text'],
-                image=f'{upload_dir}{uploaded.name}'
-            ).exists()
-        )
+        post_obj = Post.objects.first()
+        self.assertEqual(post_obj.text, form_data['text'])
+        self.assertEqual(post_obj.image, f'{upload_dir}{uploaded.name}')
 
     def test_edit_post(self):
         response = self.auth_client.post(
@@ -125,13 +123,10 @@ class TestPostForm(TestCase):
         self.assertRedirects(response, reverse(
             'posts:post_detail', args=(self.post.pk,)))
         self.assertEqual(1, Comment.objects.count())
-        self.assertTrue(
-            Comment.objects.filter(
-                text=self.comm_data['text'],
-                post=self.post.id,
-                author=TestPostForm.user.id
-            ).exists()
-        )
+        comment = Comment.objects.first()
+        self.assertEqual(comment.text, self.comm_data['text'])
+        self.assertEqual(comment.post, self.post)
+        self.assertEqual(comment.author, TestPostForm.user)
 
     def test_create_comment_by_unauth_user(self):
         Comment.objects.all().delete()

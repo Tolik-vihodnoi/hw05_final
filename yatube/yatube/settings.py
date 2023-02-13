@@ -155,5 +155,5 @@ NUM_OF_POSTS: int = 10
 DISP_LETTERS = 15
 LOGIN_URL = 'users:login'
 LOGIN_REDIRECT_URL = 'posts:index'
-# CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
 # LOGOUT_REDIRECT_URL = 'posts:index'

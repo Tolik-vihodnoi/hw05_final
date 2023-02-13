@@ -6,9 +6,9 @@
 
 {% block content %}
   <h1>{{ group.title }}</h1>
-    <p>
-      {{ group.description|linebreaksbr }}
-    </p>
+  <p>
+    {{ group.description|linebreaksbr }}
+  </p>
   {% for post in page_obj %}
     {% include 'posts/includes/article.html' %}
     {% if not forloop.last %}<hr>{% endif %}

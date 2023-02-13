@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import F, Q
+
 
 User = get_user_model()
 
@@ -45,7 +47,8 @@ class Post(models.Model):
     image = models.ImageField(
         verbose_name='Изображение',
         upload_to='posts/',
-        blank=True
+        blank=True,
+        help_text='Картинка'
     )
 
     class Meta:
@@ -71,7 +74,10 @@ class Comment(models.Model):
         related_name='comments',
         verbose_name='Автор'
     )
-    text = models.TextField(verbose_name='Текст комментария')
+    text = models.TextField(
+        verbose_name='Текст комментария',
+        help_text='Текст комментария'
+    )
     created = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата создания'
@@ -103,3 +109,15 @@ class Follow(models.Model):
 
     class Meta:
         verbose_name = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_follow'
+            ),
+            models.CheckConstraint(
+                # если бы у меня была версия 4.1, мог бы я заменить на
+                # check=Q(F('user')) ^ Q(F('author')) ??? Изначально так сделал
+                check=~Q(user=F('author')),
+                name="user isn't an author"
+            )
+        ]

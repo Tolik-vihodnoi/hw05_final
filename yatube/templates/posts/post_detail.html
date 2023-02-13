@@ -31,13 +31,13 @@
             все посты пользователя
           </a>
         </li>
+        {% if post.author == user %}
         <li class="list-group-item">
           <a href="{% url 'posts:post_edit' post.id %}" class="btn btn-primary">
-            {% if post.author == user %}
             редактировать запись
-            {% endif %}
           </a>
         </li>
+        {% endif %}
       </ul>
     </aside>
     <article class="col-12 col-md-9">

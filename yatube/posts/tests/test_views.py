@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -9,8 +10,8 @@ from django.core.paginator import Page
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 
-from posts.forms import PostForm
-from posts.models import Group, Post, Comment, Follow
+from posts.forms import CommentForm, PostForm
+from posts.models import Comment, Follow, Group, Post
 
 
 TEMP_MEDIA_ROOT = tempfile.mktemp(dir=settings.BASE_DIR)
@@ -94,10 +95,7 @@ class PostViewTest(TestCase):
         self.assertEqual(post.author, PostViewTest.post.author)
         self.assertEqual(post.group, PostViewTest.post.group)
         self.assertEqual(post.pub_date, PostViewTest.post.pub_date)
-        upload_dir = post._meta.get_field('image').upload_to
-        self.assertEqual(
-            post.image, f'{upload_dir}{PostViewTest.uploaded.name}'
-        )
+        self.assertEqual(post.image, PostViewTest.post.image)
 
     def test_pages_use_correct_templates(self):
         """Проверяет, что namespace:name вызывает корректные шаблоны"""
@@ -156,6 +154,9 @@ class PostViewTest(TestCase):
         self.assertEqual(comment.text, PostViewTest.comment.text)
         self.assertEqual(comment.author, PostViewTest.comment.author)
         self.assertEqual(comment.post, PostViewTest.comment.post)
+        self.assertIn('form', context)
+        form = context.get('form')
+        self.assertIsInstance(form, CommentForm)
 
     def test_tested_post_not_exist(self):
         url_list = [
@@ -204,14 +205,16 @@ class PostViewTest(TestCase):
     def test_can_auth_user_subscribe(self):
         """Проверяет может ли подписаться авторизованный пользователь."""
         Follow.objects.all().delete()
-        for _ in range(2):
-            self.auth_client_1.get(reverse(
-                'posts:profile_follow',
-                args=(PostViewTest.user_0.username,)
-            ))
-            self.assertEqual(Follow.objects.count(), 1)
+        self.auth_client_1.get(reverse(
+            'posts:profile_follow',
+            args=(PostViewTest.user_0.username,)
+        ))
+        self.assertTrue(Follow.objects.filter(
+            user=PostViewTest.user_1.id,
+            author=PostViewTest.user_0.id
+        ).exists())
 
-    def test_can_auth_user__unsubscribe(self):
+    def test_can_auth_user_unsubscribe(self):
         """Проверяет может ли отписаться авторизованный пользователь."""
         self.assertEqual(Follow.objects.count(), 1)
         self.auth_client_1.get(reverse(
@@ -230,9 +233,8 @@ class PostViewTest(TestCase):
         """Проверяет что пост не появился на странице подписок."""
         context = self.auth_client_0.get(
             reverse(PostViewTest.follow_url)).context
-        with self.assertRaisesMessage(
-                AssertionError, 'It seems like the page_obj is empty.'):
-            self.check_post(context)
+        self.assertIn('page_obj', context)
+        self.assertNotIn(PostViewTest.post, context['page_obj'])
 
 
 class PaginatorTest(TestCase):
