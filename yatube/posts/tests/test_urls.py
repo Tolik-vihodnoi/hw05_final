@@ -47,7 +47,7 @@ class PostUrlTest(TestCase):
             '/create/': '/auth/login/?next=/create/',
             (f'/posts/{PostUrlTest.post.id}/edit'
              '/'): f'/auth/login/?next=/posts/{PostUrlTest.post.id}/edit/',
-            '/follow/': f'/auth/login/?next=/follow/'
+            '/follow/': '/auth/login/?next=/follow/'
         }
         self.unexisting_url = {'/unexisting_page/': 'core/404.html'}
 

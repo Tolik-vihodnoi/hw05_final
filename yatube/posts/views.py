@@ -8,8 +8,7 @@ from .utils import do_page_obj
 
 
 def index(request):
-    posts = Post.objects.select_related('author',
-                                        'group')
+    posts = Post.objects.select_related('author', 'group')
     page_obj = do_page_obj(request, posts, settings.NUM_OF_POSTS)
     context = {
         'page_obj': page_obj,
