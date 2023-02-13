@@ -33,9 +33,9 @@ def profile(request, username):
     page_obj = do_page_obj(request, posts, settings.NUM_OF_POSTS)
     user = request.user
     following = (
-            user.is_authenticated
-            and not user == posts_owner
-            and Follow.objects.filter(user=user, author=posts_owner).exists()
+        user.is_authenticated
+        and not user == posts_owner
+        and Follow.objects.filter(user=user, author=posts_owner).exists()
     )
     context = {
         'page_obj': page_obj,
