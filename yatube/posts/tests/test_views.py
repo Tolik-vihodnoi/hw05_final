@@ -155,7 +155,7 @@ class PostViewTest(TestCase):
         self.assertEqual(comment.author, PostViewTest.comment.author)
         self.assertEqual(comment.post, PostViewTest.comment.post)
         self.assertIn('form', context)
-        form = context.get('form')
+        form = context['form']
         self.assertIsInstance(form, CommentForm)
 
     def test_tested_post_not_exist(self):
@@ -210,8 +210,8 @@ class PostViewTest(TestCase):
             args=(PostViewTest.user_0.username,)
         ))
         self.assertTrue(Follow.objects.filter(
-            user=PostViewTest.user_1.id,
-            author=PostViewTest.user_0.id
+            user=PostViewTest.user_1,
+            author=PostViewTest.user_0
         ).exists())
 
     def test_can_auth_user_unsubscribe(self):

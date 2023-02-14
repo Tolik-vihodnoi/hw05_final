@@ -115,8 +115,6 @@ class Follow(models.Model):
                 name='unique_follow'
             ),
             models.CheckConstraint(
-                # если бы у меня была версия 4.1, мог бы я заменить на
-                # check=Q(F('user')) ^ Q(F('author')) ??? Изначально так сделал
                 check=~Q(user=F('author')),
                 name="user isn't an author"
             )
